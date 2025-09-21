@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Repository Analyzer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 2rem;
+            background-color: #f8f9fa;
+        }
+        .header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+        .features {
+            margin-top: 3rem;
+        }
+        .feature-card {
+            height: 100%;
+            transition: transform 0.3s;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 2rem;
+        }
+        .footer {
+            margin-top: 3rem;
+            text-align: center;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>GitHub Repository Analyzer</h1>
+            <p class="lead">Generate comprehensive documentation for any GitHub repository</p>
+        </div>
+        
+        <div class="form-container">
+            <form id="analyzeForm">
+                <div class="mb-3">
+                    <label for="geminiApiKey" class="form-label">Google Gemini API Key (Optional)</label>
+                    <input type="password" class="form-control" id="geminiApiKey" placeholder="AI...">
+                    <div class="form-text">
+                        Providing a Gemini API key enables AI-powered repository analysis and README generation.
+                        <a href="https://ai.google.dev/" target="_blank">Get a Gemini API key</a>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="repoUrl" class="form-label">GitHub Repository URL</label>
+                    <input type="text" class="form-control" id="repoUrl" placeholder="https://github.com/username/repository" required>
+                    <div class="form-text">Enter the full URL of the GitHub repository you want to analyze</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="githubToken" class="form-label">GitHub API Token (Optional)</label>
+                    <input type="password" class="form-control" id="githubToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+                    <div class="form-text">
+                        Providing a token increases API rate limits and allows access to private repositories.
+                        <a href="https://github.com/settings/tokens" target="_blank">Generate a token</a>
+                    </div>
+                </div>
+                
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="useAI">
+                    <label class="form-check-label" for="useAI">Use AI for enhanced analysis</label>
+                    <div class="form-text">
+                        Use AI to generate more comprehensive documentation and insights (requires Gemini API key).
+                    </div>
+                </div>
+                
+<!--                <div class="mb-3 form-check">-->
+<!--                    <input type="checkbox" class="form-check-input" id="generateReadme" checked>-->
+<!--                    <label class="form-check-label" for="generateReadme">Generate README if none exists</label>-->
+<!--                    <div class="form-text">-->
+<!--                        If the repository doesn't have a README file, automatically generate one based on the analysis.-->
+<!--                    </div>-->
+<!--                </div>-->
+
+<!--                <div class="mb-3 form-check">-->
+<!--                    <input type="checkbox" class="form-check-input" id="forceGenerateReadme">-->
+<!--                    <label class="form-check-label" for="forceGenerateReadme">Force README generation</label>-->
+<!--                    <div class="form-text">-->
+<!--                        Generate a README even if the repository already has one. The original README will be preserved.-->
+<!--                    </div>-->
+<!--                </div>-->
+                
+                <button type="submit" class="btn btn-primary w-100">Analyze Repository</button>
+            </form>
+            
+            <div class="loading" id="loadingIndicator">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Analyzing repository...</p>
+            </div>
+            
+            <div class="alert alert-danger mt-3" id="errorAlert" style="display: none;"></div>
+        </div>
+        
+        <div class="features">
+            <h2 class="text-center mb-4">Features</h2>
+            
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                <div class="col">
+                    <div class="card h-100 feature-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Repository Overview</h5>
+                            <p class="card-text">Get comprehensive information about the repository, including stars, forks, and contributors.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col">
+                    <div class="card h-100 feature-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Code Analysis</h5>
+                            <p class="card-text">Identify key functions, classes, and components in the codebase.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col">
+                    <div class="card h-100 feature-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Technology Detection</h5>
+                            <p class="card-text">Automatically detect programming languages, frameworks, and libraries used in the project.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col">
+                    <div class="card h-100 feature-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Structure Visualization</h5>
+                            <p class="card-text">Visualize the repository structure with an interactive directory tree.</p>
+                        </div>
+                    </div>
+                </div>
+                
+<!--                <div class="col">-->
+<!--                    <div class="card h-100 feature-card">-->
+<!--                        <div class="card-body">-->
+<!--                            <h5 class="card-title">Documentation Export</h5>-->
+<!--                            <p class="card-text">Export the generated documentation in Markdown format for easy sharing.</p>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+                
+<!--                <div class="col">-->
+<!--                    <div class="card h-100 feature-card">-->
+<!--                        <div class="card-body">-->
+<!--                            <h5 class="card-title">API Access</h5>-->
+<!--                            <p class="card-text">Access the analyzer programmatically through our REST API for integration with your tools.</p>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+            </div>
+        </div>
+        
+<!--        <div class="footer">-->
+<!--            <p>GitHub Repository Analyzer ß&copy; 2025</p>-->
+<!--        </div>-->
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('analyzeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const repoUrl = document.getElementById('repoUrl').value;
+            const githubToken = document.getElementById('githubToken').value;
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const errorAlert = document.getElementById('errorAlert');
+            
+            // Hide any previous error
+            errorAlert.style.display = 'none';
+            
+            // Show loading indicator
+            loadingIndicator.style.display = 'block';
+            
+            // Send analysis request
+            fetch('/analyze', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    repo_url: repoUrl,
+                    github_token: githubToken,
+                    gemini_api_key: document.getElementById('geminiApiKey').value,
+                    use_ai: document.getElementById('useAI').checked
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                loadingIndicator.style.display = 'none';
+                
+                if (data.error) {
+                    errorAlert.textContent = data.error;
+                    errorAlert.style.display = 'block';
+                } else if (data.redirect) {
+                    // Force a fresh load of the results page
+                    window.location.href = data.redirect + '?t=' + new Date().getTime();
+                }
+            })
+            .catch(error => {
+                loadingIndicator.style.display = 'none';
+                errorAlert.textContent = 'An error occurred. Please try again.';
+                errorAlert.style.display = 'block';
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>

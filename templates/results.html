@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Results - GitHub Repository Analyzer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/styles/github.min.css">
+    <style>
+        body {
+            padding-top: 2rem;
+            background-color: #f8f9fa;
+        }
+        .header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .content-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+        .repo-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .repo-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin-right: 1.5rem;
+        }
+        .repo-stats {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+        .stat-item {
+            display: flex;
+            align-items: center;
+        }
+        .stat-item svg {
+            margin-right: 0.5rem;
+        }
+        .section {
+            margin-top: 3rem;
+            padding-top: 1rem;
+            border-top: 1px solid #dee2e6;
+        }
+        .language-bar {
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            display: flex;
+            margin: 1rem 0;
+        }
+        .language-segment {
+            height: 100%;
+        }
+        .tree-view {
+            font-family: monospace;
+            white-space: pre;
+            margin: 1rem 0;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .footer {
+            margin-top: 3rem;
+            text-align: center;
+            color: #6c757d;
+        }
+        .nav-tabs {
+            margin-bottom: 1.5rem;
+        }
+        .readme-content img {
+            max-width: 100%;
+            height: auto;
+        }
+        .function-table, .class-table {
+            font-size: 0.9rem;
+        }
+        .download-btn {
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Repository Analysis Results</h1>
+            <p class="lead">Comprehensive documentation and insights</p>
+        </div>
+        
+        <div class="content-container">
+            <div class="repo-header">
+                <img src="{{ results.repo_info.owner.avatar_url if results.repo_info and 'owner' in results.repo_info and 'avatar_url' in results.repo_info.owner else 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png' }}" alt="Repository Owner" class="repo-avatar">
+                <div>
+                    <h2>{{ results.repo_info.name if results.repo_info and 'name' in results.repo_info else 'Repository' }}</h2>
+                    <p>{{ results.repo_info.description if results.repo_info and 'description' in results.repo_info else 'No description available' }}</p>
+                    <div class="repo-stats">
+                        <div class="stat-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-star" viewBox="0 0 16 16">
+                                <path d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.565.565 0 0 0-.163-.505L1.71 6.745l4.052-.576a.525.525 0 0 0 .393-.288L8 2.223l1.847 3.658a.525.525 0 0 0 .393.288l4.052.575-2.906 2.77a.565.565 0 0 0-.163.506l.694 3.957-3.686-1.894a.503.503 0 0 0-.461 0z"/>
+                            </svg>
+                            {{ results.repo_info.stargazers_count if results.repo_info and 'stargazers_count' in results.repo_info else '0' }} Stars
+                        </div>
+                        <div class="stat-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-diagram-2" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M6 3.5A1.5 1.5 0 0 1 7.5 2h1A1.5 1.5 0 0 1 10 3.5v1A1.5 1.5 0 0 1 8.5 6v1H11a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0V8h-5v.5a.5.5 0 0 1-1 0v-1A.5.5 0 0 1 5 7h2.5V6A1.5 1.5 0 0 1 6 4.5v-1zM8.5 5a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1zM3 11.5A1.5 1.5 0 0 1 4.5 10h1A1.5 1.5 0 0 1 7 11.5v1A1.5 1.5 0 0 1 5.5 14h-1A1.5 1.5 0 0 1 3 12.5v-1zm1.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zm4.5.5a1.5 1.5 0 0 1 1.5-1.5h1a1.5 1.5 0 0 1 1.5 1.5v1a1.5 1.5 0 0 1-1.5 1.5h-1A1.5 1.5 0 0 1 9 12.5v-1zm1.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1z"/>
+                            </svg>
+                            {{ results.repo_info.forks_count if results.repo_info and 'forks_count' in results.repo_info else '0' }} Forks
+                        </div>
+                        <div class="stat-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye" viewBox="0 0 16 16">
+                                <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/>
+                                <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/>
+                            </svg>
+                            {{ results.repo_info.watchers_count if results.repo_info and 'watchers_count' in results.repo_info else '0' }} Watchers
+                        </div>
+                        <div class="stat-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-text" viewBox="0 0 16 16">
+                                <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5z"/>
+                                <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5L9.5 0zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/>
+                            </svg>
+                            {{ results.file_count }} Files
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+<!--            <a href="/download" class="btn btn-primary download-btn">Download Documentation</a>-->
+            
+            {% if results.readme_generated %}
+                {% if results.ai_generated_readme %}
+                    <a href="/download-readme" class="btn btn-success download-btn ms-2">Download AI-Generated README</a>
+                {% else %}
+                    <a href="/download-readme" class="btn btn-success download-btn ms-2">Download Generated README</a>
+                {% endif %}
+            {% endif %}
+            
+            {% if results.original_readme_content %}
+                <a href="/download-original-readme" class="btn btn-outline-secondary download-btn ms-2">Download Original README</a>
+            {% endif %}
+            
+            <ul class="nav nav-tabs" id="resultTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true">Overview</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="structure-tab" data-bs-toggle="tab" data-bs-target="#structure" type="button" role="tab" aria-controls="structure" aria-selected="false">Structure</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="code-tab" data-bs-toggle="tab" data-bs-target="#code" type="button" role="tab" aria-controls="code" aria-selected="false">Code Analysis</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="readme-tab" data-bs-toggle="tab" data-bs-target="#readme" type="button" role="tab" aria-controls="readme" aria-selected="false">README</button>
+                </li>
+            </ul>
+            
+            <div class="tab-content" id="resultTabsContent">
+                <!-- Overview Tab -->
+                <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+                    {% if results.ai_enabled %}
+                        <div class="alert alert-success mb-4">
+                            <strong>AI-Enhanced Analysis:</strong> This analysis was enhanced using artificial intelligence.
+                        </div>
+                        
+                        <h3>AI Insights</h3>
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h4>Project Description</h4>
+                                <p>{{ results.ai_insights.project_description }}</p>
+                                
+                                <h4>Architecture</h4>
+                                <p>{{ results.ai_insights.architecture }}</p>
+                                
+                                <h4>Use Cases</h4>
+                                <ul>
+                                    {% for use_case in results.ai_insights.use_cases %}
+                                        <li>{{ use_case }}</li>
+                                    {% endfor %}
+                                </ul>
+                                
+                                <h4>Technical Highlights</h4>
+                                <ul>
+                                    {% for highlight in results.ai_insights.technical_highlights %}
+                                        <li>{{ highlight }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    {% endif %}
+                    <h3>Features and Technologies</h3>
+                    <div class="row">
+                        {% if results.features %}
+                            {% for feature in results.features %}
+                                <div class="col-md-4 mb-3">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ feature }}</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="col">
+                                <p>No specific features detected.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="section">
+                        <h3>Language Distribution</h3>
+                        {% if results.language_stats %}
+                            <div class="language-bar">
+                                {% set total = namespace(value=0) %}
+                                {% for lang, bytes in results.language_stats.items() %}
+                                    {% set total.value = total.value + bytes %}
+                                {% endfor %}
+                                
+                                {% for lang, bytes in results.language_stats.items() %}
+                                    {% set percentage = (bytes / total.value * 100) | round(1) %}
+                                    {% set color = '#' + '%06x'|format(lang|hash_code % 16777215) %}
+                                    <div class="language-segment" style="width: {{ percentage }}%; background-color: {{ color }};" title="{{ lang }}: {{ percentage }}%"></div>
+                                {% endfor %}
+                            </div>
+                            
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Language</th>
+                                        <th>Bytes</th>
+                                        <th>Percentage</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for lang, bytes in results.language_stats.items() %}
+                                        {% set percentage = (bytes / total.value * 100) | round(1) %}
+                                        <tr>
+                                            <td>{{ lang }}</td>
+                                            <td>{{ bytes }}</td>
+                                            <td>{{ percentage }}%</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <p>No language statistics available.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Structure Tab -->
+                <div class="tab-pane fade" id="structure" role="tabpanel" aria-labelledby="structure-tab">
+                    <h3>Repository Structure</h3>
+                    <div class="tree-view" id="repoStructure"></div>
+                </div>
+                
+                <!-- Code Analysis Tab -->
+                <div class="tab-pane fade" id="code" role="tabpanel" aria-labelledby="code-tab">
+                    <h3>Functions</h3>
+                    {% if results.functions %}
+                        <div class="table-responsive">
+                            <table class="table table-striped function-table">
+                                <thead>
+                                    <tr>
+                                        <th>Function</th>
+                                        <th>File</th>
+                                        <th>Parameters</th>
+                                        <th>Language</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for func in results.functions[:50] %}
+                                        <tr>
+                                            <td><code>{{ func.name }}</code></td>
+                                            <td>{{ func.file }}</td>
+                                            <td><code>{{ func.params }}</code></td>
+                                            <td>{{ func.language }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% if results.functions|length > 50 %}
+                            <p>Showing 50 of {{ results.functions|length }} functions.</p>
+                        {% endif %}
+                    {% else %}
+                        <p>No functions detected.</p>
+                    {% endif %}
+                    
+                    <h3 class="mt-5">Classes</h3>
+                    {% if results.classes %}
+                        <div class="table-responsive">
+                            <table class="table table-striped class-table">
+                                <thead>
+                                    <tr>
+                                        <th>Class</th>
+                                        <th>File</th>
+                                        <th>Inheritance</th>
+                                        <th>Language</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for cls in results.classes[:50] %}
+                                        <tr>
+                                            <td><code>{{ cls.name }}</code></td>
+                                            <td>{{ cls.file }}</td>
+                                            <td><code>{{ cls.inheritance }}</code></td>
+                                            <td>{{ cls.language }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% if results.classes|length > 50 %}
+                            <p>Showing 50 of {{ results.classes|length }} classes.</p>
+                        {% endif %}
+                    {% else %}
+                        <p>No classes detected.</p>
+                    {% endif %}
+                </div>
+                
+                <!-- README Tab -->
+                <div class="tab-pane fade" id="readme" role="tabpanel" aria-labelledby="readme-tab">
+                    <h3>README Content</h3>
+                    <div class="readme-content" id="readmeContent">
+                        {% if results.readme_content %}
+                            {% if results.readme_generated %}
+                                <div class="alert alert-info mb-3">
+                                    <strong>Note:</strong> This README was 
+                                    {% if results.ai_generated_readme %}
+                                        automatically generated using AI analysis.
+                                    {% else %}
+                                        automatically generated based on repository analysis.
+                                    {% endif %}
+                                    {% if results.original_readme_content %}
+                                        <button class="btn btn-sm btn-outline-primary ms-3" id="toggleReadmeBtn">Show Original README</button>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                            <!-- README content will be rendered here by JavaScript -->
+                            <div id="readmeMarkdown"></div>
+                            
+                            {% if results.original_readme_content %}
+                                <div id="originalReadmeContent" style="display: none;">
+                                    <div class="alert alert-secondary mb-3">
+                                        <strong>Original Repository README:</strong>
+                                        <button class="btn btn-sm btn-outline-primary ms-3" id="toggleGeneratedReadmeBtn">Show Generated README</button>
+                                    </div>
+                                    <div id="originalReadmeMarkdown"></div>
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <p>No README found in this repository.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>GitHub Repository Analyzer &copy; 2025</p>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@4.0.0/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/lib/highlight.min.js"></script>
+    <script>
+        // Render repository structure
+        function renderStructure(structure, prefix = "") {
+            let result = "";
+            const keys = Object.keys(structure).filter(k => k !== "__files");
+            
+            // Print files first
+            if (structure.__files) {
+                for (let i = 0; i < structure.__files.length; i++) {
+                    const file = structure.__files[i];
+                    const isLast = (i === structure.__files.length - 1) && keys.length === 0;
+                    result += `${prefix}${isLast ? "└── " : "├── "}${file}\n`;
+                }
+            }
+            
+            // Then print directories
+            for (let i = 0; i < keys.length; i++) {
+                const key = keys[i];
+                const isLast = i === keys.length - 1;
+                result += `${prefix}${isLast ? "└── " : "├── "}${key}/\n`;
+                result += renderStructure(
+                    structure[key],
+                    prefix + (isLast ? "    " : "│   ")
+                );
+            }
+            
+            return result;
+        }
+        
+        // Render README content with markdown
+        function renderReadme(content) {
+            marked.setOptions({
+                highlight: function(code, lang) {
+                    if (lang && hljs.getLanguage(lang)) {
+                        return hljs.highlight(code, { language: lang }).value;
+                    }
+                    return hljs.highlightAuto(code).value;
+                },
+                breaks: true
+            });
+            
+            document.getElementById('readmeMarkdown').innerHTML = marked.parse(content);
+        }
+        
+        // Initialize when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Render repository structure
+            const repoStructure = {{ results.repo_structure|tojson }};
+            if (repoStructure) {
+                document.getElementById('repoStructure').textContent = renderStructure(repoStructure);
+            }
+            
+            // Render README content
+            const readmeContent = {{ results.readme_content|tojson }};
+            if (readmeContent) {
+                renderReadme(readmeContent);
+            }
+            
+            // Render original README content if available
+            const originalReadmeContent = {{ results.original_readme_content|tojson if results.original_readme_content else 'null' }};
+            if (originalReadmeContent) {
+                document.getElementById('originalReadmeMarkdown').innerHTML = marked.parse(originalReadmeContent);
+                
+                // Set up toggle buttons
+                document.getElementById('toggleReadmeBtn').addEventListener('click', function() {
+                    document.getElementById('readmeMarkdown').style.display = 'none';
+                    document.getElementById('originalReadmeContent').style.display = 'block';
+                });
+                
+                document.getElementById('toggleGeneratedReadmeBtn').addEventListener('click', function() {
+                    document.getElementById('readmeMarkdown').style.display = 'block';
+                    document.getElementById('originalReadmeContent').style.display = 'none';
+                });
+            }
+        });
+    </script>
+</body>
+</html>
