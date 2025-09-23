@@ -51,7 +51,9 @@ class AIRepositoryAnalyzer:
         except Exception as e:
             print(f"Error initializing AI model: {e}")
             raise
-    
+
+
+
     def analyze_repository(self, repo_data: Dict[str, Any]) -> Dict[str, Any]:
         """
         Analyze repository data using AI.
@@ -334,3 +336,143 @@ class AIRepositoryAnalyzer:
         readme += f"This project is licensed under {license_name}.\n"
         
         return readme
+
+
+
+    def generate_cURL_Command(self, repo_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Analyze repository data using AI.
+
+        Args:
+            repo_data (dict): Repository data from the GitHub API analyzer
+
+        Returns:
+            dict: Enhanced repository data with AI insights
+        """
+        try:
+            # Extract key information from repo_data
+            repo_name = repo_data.get('repo_info', {}).get('name', 'Unknown Repository')
+            repo_description = repo_data.get('repo_info', {}).get('description', '')
+            languages = list(repo_data.get('language_stats', {}).keys())
+            features = repo_data.get('features', [])
+            functions = repo_data.get('functions', [])[:20]  # Limit to 20 functions for prompt size
+            classes = repo_data.get('classes', [])[:20]  # Limit to 20 classes for prompt size
+
+            # Create a prompt for the AI
+            prompt = self._create_postman_prompt(
+                repo_name,
+                repo_description,
+                languages,
+                features,
+                functions,
+                classes
+            )
+
+            print(prompt)
+
+            # Get AI response
+            generation_config = {
+                "temperature": 0.2,
+                "top_p": 0.8,
+                "top_k": 40,
+                "max_output_tokens": 4096,
+            }
+
+            response = self.model.generate_content(
+                prompt,
+                generation_config=generation_config
+            )
+
+            print("response")
+            print(response.text)
+
+            # # Parse AI insights
+            # ai_insights = self._parse_ai_response_postman(response.text)
+
+            # Add AI insights to repo_data
+            repo_data['postman'] = response.text
+
+            return repo_data
+
+        except Exception as e:
+            print(f"Error in AI analysis: {e}")
+            # Add fallback insights
+            repo_data['ai_insights'] = {
+                "project_description": f"A {'/'.join(languages)} repository named {repo_name}.",
+                "main_features": features,
+                "architecture": "Not identified due to analysis error.",
+                "use_cases": ["General purpose application"],
+                "technical_highlights": [f"Uses {lang}" for lang in languages[:3]]
+            }
+            repo_data['ai_error'] = str(e)
+            return repo_data
+
+
+    def _create_postman_prompt(
+            self,
+            repo_name: str,
+            repo_description: str,
+            languages: List[str],
+            features: List[str],
+            functions: List[Dict[str, str]],
+            classes: List[Dict[str, str]]
+    ) -> str:
+
+        # Format functions and classes for the prompt
+        functions_text = "\n".join([
+            f"- {func.get('name')}({func.get('params', '')}) in {func.get('file', '')}"
+            for func in functions
+        ])
+
+        classes_text = "\n".join([
+            f"- {cls.get('name')} in {cls.get('file', '')}" +
+            (f" extends {cls.get('inheritance')}" if cls.get('inheritance') else "")
+            for cls in classes
+        ])
+
+        prompt = f"""
+        You are an expert software developer tasked with creating curl commands from Controller classes.
+        
+        Repository Name: {repo_name}
+        Repository Description: {repo_description}
+        
+        Programming Languages: {', '.join(languages)}
+        Detected Features/Technologies: {', '.join(features)}
+        
+        Key Functions:
+        {functions_text}
+        
+        Key Classes:
+        {classes_text}
+        
+        Based on this information, please analyze:
+        1. The controller classes and create curl command for each endpoint.
+        2. Parse the annotations (@RequestMapping, @GetMapping, @PostMapping, @PutMapping, @DeleteMapping, @PatchMapping) for each controller class for better understanding.
+        3. Avoid relying on any prior assumptions or cached information once a specific file path is given.
+        4. Make sure you just return curl commands as multi line string, nothing extra to be returned
+        """
+
+        return prompt
+
+
+
+    def _parse_ai_response_postman(self, response_text: str) -> Dict[str, Any]:
+        """Parse the AI response to extract structured insights."""
+        try:
+            # Try to extract JSON from the response
+            json_match = re.search(r'```json\s*(.*?)\s*```', response_text, re.DOTALL)
+            if json_match:
+                import json
+                return json.loads(json_match.group(1))
+
+            # If no JSON block found, try to parse the entire response as JSON
+            import json
+            return json.loads(response_text)
+
+        except Exception as e:
+            print(f"Error parsing AI response: {e}")
+            print(f"Response text: {response_text}...")
+            # Return a structured fallback if parsing fails
+            return {
+                "command": response_text
+            }

@@ -6,6 +6,14 @@
     <title>GitHub Repository Analyzer</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        .btn-success {
+            background-color: #EF5B25; /* Example: changes background to red */;
+            border-color: #EF5B25;
+        }
+        .btn-success:hover {
+            background-color: #FF8C00;
+            border-color: #EF5B25;
+        }
         body {
             padding-top: 2rem;
             background-color: #f8f9fa;
@@ -47,14 +55,14 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>GitHub Repository Analyzer</h1>
-            <p class="lead">Generate comprehensive documentation for any GitHub repository</p>
+            <h1>Repository Analyzer</h1>
+            <p class="lead">Generate comprehensive documentation for any repository</p>
         </div>
         
         <div class="form-container">
             <form id="analyzeForm">
                 <div class="mb-3">
-                    <label for="geminiApiKey" class="form-label">Google Gemini API Key (Optional)</label>
+                    <label for="geminiApiKey" class="form-label">Google Gemini API Key </label>
                     <input type="password" class="form-control" id="geminiApiKey" placeholder="AI...">
                     <div class="form-text">
                         Providing a Gemini API key enables AI-powered repository analysis and README generation.
@@ -64,12 +72,12 @@
                 
                 <div class="mb-3">
                     <label for="repoUrl" class="form-label">GitHub Repository URL</label>
-                    <input type="text" class="form-control" id="repoUrl" placeholder="https://github.com/username/repository" required>
+                    <input type="text" class="form-control" id="repoUrl" placeholder="https://github.com/username/repository">
                     <div class="form-text">Enter the full URL of the GitHub repository you want to analyze</div>
                 </div>
                 
                 <div class="mb-3">
-                    <label for="githubToken" class="form-label">GitHub API Token (Optional)</label>
+                    <label for="githubToken" class="form-label">GitHub API Token</label>
                     <input type="password" class="form-control" id="githubToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
                     <div class="form-text">
                         Providing a token increases API rate limits and allows access to private repositories.
@@ -77,31 +85,16 @@
                     </div>
                 </div>
                 
-                <div class="mb-3 form-check">
-                    <input type="checkbox" class="form-check-input" id="useAI">
-                    <label class="form-check-label" for="useAI">Use AI for enhanced analysis</label>
-                    <div class="form-text">
-                        Use AI to generate more comprehensive documentation and insights (requires Gemini API key).
-                    </div>
-                </div>
-                
 <!--                <div class="mb-3 form-check">-->
-<!--                    <input type="checkbox" class="form-check-input" id="generateReadme" checked>-->
-<!--                    <label class="form-check-label" for="generateReadme">Generate README if none exists</label>-->
+<!--                    <input type="checkbox" class="form-check-input" id="useAI">-->
+<!--                    <label class="form-check-label" for="useAI">Use AI for enhanced analysis</label>-->
 <!--                    <div class="form-text">-->
-<!--                        If the repository doesn't have a README file, automatically generate one based on the analysis.-->
-<!--                    </div>-->
-<!--                </div>-->
-
-<!--                <div class="mb-3 form-check">-->
-<!--                    <input type="checkbox" class="form-check-input" id="forceGenerateReadme">-->
-<!--                    <label class="form-check-label" for="forceGenerateReadme">Force README generation</label>-->
-<!--                    <div class="form-text">-->
-<!--                        Generate a README even if the repository already has one. The original README will be preserved.-->
+<!--                        Use AI to generate more comprehensive documentation and insights (requires Gemini API key).-->
 <!--                    </div>-->
 <!--                </div>-->
                 
-                <button type="submit" class="btn btn-primary w-100">Analyze Repository</button>
+                <button type="submit" id = "analysis" class="btn btn-primary w-100">Analyze Repository</button>
+                <button type="submit" id = "postman" class="btn btn-success w-100">Generate Postman Collection</button>
             </form>
             
             <div class="loading" id="loadingIndicator">
@@ -109,6 +102,13 @@
                     <span class="visually-hidden">Loading...</span>
                 </div>
                 <p class="mt-2">Analyzing repository...</p>
+            </div>
+
+            <div class="loading" id="loadingIndicator2">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Generating collection...</p>
             </div>
             
             <div class="alert alert-danger mt-3" id="errorAlert" style="display: none;"></div>
@@ -153,35 +153,14 @@
                         </div>
                     </div>
                 </div>
-                
-<!--                <div class="col">-->
-<!--                    <div class="card h-100 feature-card">-->
-<!--                        <div class="card-body">-->
-<!--                            <h5 class="card-title">Documentation Export</h5>-->
-<!--                            <p class="card-text">Export the generated documentation in Markdown format for easy sharing.</p>-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                </div>-->
-                
-<!--                <div class="col">-->
-<!--                    <div class="card h-100 feature-card">-->
-<!--                        <div class="card-body">-->
-<!--                            <h5 class="card-title">API Access</h5>-->
-<!--                            <p class="card-text">Access the analyzer programmatically through our REST API for integration with your tools.</p>-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                </div>-->
             </div>
         </div>
-        
-<!--        <div class="footer">-->
-<!--            <p>GitHub Repository Analyzer ß&copy; 2025</p>-->
-<!--        </div>-->
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.getElementById('analyzeForm').addEventListener('submit', function(e) {
+        document.getElementById('analysis').addEventListener('click', function(e) {
+
             e.preventDefault();
             
             const repoUrl = document.getElementById('repoUrl').value;
@@ -205,7 +184,7 @@
                     repo_url: repoUrl,
                     github_token: githubToken,
                     gemini_api_key: document.getElementById('geminiApiKey').value,
-                    use_ai: document.getElementById('useAI').checked
+                    use_ai: true
                 })
             })
             .then(response => response.json())
@@ -227,6 +206,42 @@
                 console.error('Error:', error);
             });
         });
+
+    document.getElementById('postman').addEventListener('click', function(e) {
+
+        console.log("generating postman");
+        const repoUrl = document.getElementById('repoUrl').value;
+        const githubToken = document.getElementById('githubToken').value;
+
+         // Show loading indicator
+        loadingIndicator2.style.display = 'block';
+
+        fetch('/generate-postman-collection', {
+                method: 'POST',
+                 headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    repo_url: repoUrl,
+                    github_token: githubToken
+                })
+         })
+        .then(response => response.blob()) // Get the response body as a Blob
+        .then(blob => {
+            // Proceed with downloading the blob
+            const objectUrl = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = objectUrl;
+            link.download = 'postman-collection.txt'; // Set the desired filename
+            document.body.appendChild(link); // Append to body (can be removed later)
+            link.click(); // Programmatically click the link to trigger download
+            document.body.removeChild(link); // Clean up the temporary link
+            URL.revokeObjectURL(objectUrl);
+        })
+        .catch(error => {
+            console.error('Error fetching the file:', error);
+        });
+    });
     </script>
 </body>
 </html>

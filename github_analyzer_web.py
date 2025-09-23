@@ -52,6 +52,34 @@ def index():
     """Render the main page."""
     return render_template('index.html')
 
+@app.route('/generate-postman-collection', methods=['GET','POST'] )
+def generate_text_file():
+    # Content of the text document
+
+    repo_url = "https://github.com/AkhileshChandalia/productservice-hackathon"
+    # github_token = ""
+    # gemini_api_key = ""
+
+    print("generating")
+    print(repo_url)
+    analyzer = GitHubAPIAnalyzer(repo_url, "")
+    # Analyze repository
+    results = analyzer.analyze()
+    ai_analyzer = AIRepositoryAnalyzer("")
+    commands = ai_analyzer.generate_cURL_Command(results)
+
+    print(commands['postman'])
+
+   # Create a Flask Response object
+    # Set mimetype to 'text/plain' for a plain text file
+    # Set headers to suggest a filename for download
+
+    return Response(
+        commands['postman'],
+        mimetype='text/plain',
+        headers={'Content-Disposition': 'attachment; filename=postman_collection.txt'}
+    )
+
 @app.route('/analyze', methods=['POST'])
 def analyze():
     """Analyze a GitHub repository."""
