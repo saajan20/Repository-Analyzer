@@ -238,11 +238,12 @@
             link.click(); // Programmatically click the link to trigger download
             document.body.removeChild(link); // Clean up the temporary link
             URL.revokeObjectURL(objectUrl);
+            loadingIndicator2.style.display = 'none';
         })
         .catch(error => {
             console.error('Error fetching the file:', error);
         });
-        loadingIndicator2.style.display = 'none';
+
     });
     </script>
 </body>
