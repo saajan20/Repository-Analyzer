@@ -56,16 +56,17 @@ def index():
 def generate_text_file():
     # Content of the text document
 
-    repo_url = "https://github.com/AkhileshChandalia/productservice-hackathon"
-    # github_token = ""
-    # gemini_api_key = ""
+    data = request.json
+    repo_url = data.get('repo_url')
+    github_token = data.get('github_token')
+    gemini_api_key = data.get('gemini_api_key')
 
     print("generating")
     print(repo_url)
-    analyzer = GitHubAPIAnalyzer(repo_url, "")
+    analyzer = GitHubAPIAnalyzer(repo_url, github_token)
     # Analyze repository
     results = analyzer.analyze()
-    ai_analyzer = AIRepositoryAnalyzer("")
+    ai_analyzer = AIRepositoryAnalyzer(gemini_api_key)
     commands = ai_analyzer.generate_cURL_Command(results)
 
     print(commands['postman'])
